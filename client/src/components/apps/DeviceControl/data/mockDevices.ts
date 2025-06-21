@@ -15,7 +15,19 @@ export const mockDevices: Device[] = [
     memory: 67,
     storage: 78,
     network: { upload: 125.5, download: 89.2 },
-    security: { firewall: true, encryption: true, updates: true }
+    security: { firewall: true, encryption: true, updates: true },
+    capabilities: {
+      canConnect: true,
+      canExecuteCommands: true,
+      canStoreData: true,
+      canMonitor: true,
+      hasFileSystem: true
+    },
+    data: {
+      tables: ['users', 'sessions', 'logs', 'network_data'],
+      connections: 15,
+      queriesPerSecond: 245
+    }
   },
   {
     id: '2',
@@ -30,7 +42,18 @@ export const mockDevices: Device[] = [
     cpu: 15,
     memory: 45,
     network: { upload: 1024, download: 512 },
-    security: { firewall: true, encryption: true, updates: false }
+    security: { firewall: true, encryption: true, updates: false },
+    capabilities: {
+      canConnect: true,
+      canExecuteCommands: true,
+      canRoute: true,
+      canMonitor: true
+    },
+    data: {
+      connectedDevices: 23,
+      routingTable: ['192.168.1.0/24', '10.0.0.0/8'],
+      bandwidth: { total: '1Gbps', used: '340Mbps' }
+    }
   },
   {
     id: '3',
@@ -46,7 +69,19 @@ export const mockDevices: Device[] = [
     memory: 72,
     storage: 56,
     network: { upload: 89.5, download: 156.8 },
-    security: { firewall: true, encryption: true, updates: true }
+    security: { firewall: true, encryption: true, updates: true },
+    capabilities: {
+      canConnect: true,
+      canExecuteCommands: true,
+      canStoreData: true,
+      canMonitor: true,
+      hasFileSystem: true
+    },
+    data: {
+      tools: ['nmap', 'metasploit', 'wireshark', 'burpsuite'],
+      activeScans: 3,
+      discoveredHosts: 45
+    }
   },
   {
     id: '4',
@@ -62,7 +97,19 @@ export const mockDevices: Device[] = [
     memory: 58,
     storage: 23,
     network: { upload: 234.1, download: 78.9 },
-    security: { firewall: true, encryption: true, updates: true }
+    security: { firewall: true, encryption: true, updates: true },
+    capabilities: {
+      canConnect: true,
+      canExecuteCommands: true,
+      canStoreData: true,
+      canMonitor: true,
+      hasFileSystem: true
+    },
+    data: {
+      websites: ['darknet.local', 'admin.darknet.local'],
+      activeConnections: 156,
+      requestsPerSecond: 89
+    }
   },
   {
     id: '5',
@@ -77,7 +124,18 @@ export const mockDevices: Device[] = [
     cpu: 78,
     memory: 85,
     network: { upload: 12.3, download: 45.6 },
-    security: { firewall: false, encryption: true, updates: false }
+    security: { firewall: false, encryption: true, updates: false },
+    capabilities: {
+      canConnect: true,
+      canExecuteCommands: false,
+      canStoreData: true,
+      canMonitor: true
+    },
+    data: {
+      sensors: ['temperature', 'humidity', 'motion', 'light'],
+      connectedDevices: 8,
+      mqttMessages: 1245
+    }
   },
   {
     id: '6',

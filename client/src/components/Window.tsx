@@ -251,7 +251,7 @@ const Window: React.FC<WindowProps> = ({ window }) => {
       case "device-control":
         return <DeviceControl />;
       case "browser":
-        return <Browser />;
+        return <Browser {...window.props} />;
       default:
         return <div className="p-4 text-white">App not implemented yet</div>;
     }

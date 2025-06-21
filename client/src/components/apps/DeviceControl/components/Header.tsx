@@ -5,13 +5,20 @@ interface HeaderProps {
   onTabChange: (tab: 'overview' | 'control' | 'monitoring' | 'security' | 'topology') => void;
   deviceCount: number;
   onlineCount: number;
+  networkStats?: {
+    totalRecords: number;
+    totalLogs: number;
+    totalConnections: number;
+    deviceCount: number;
+  };
 }
 
 const Header: React.FC<HeaderProps> = ({
   activeTab,
   onTabChange,
   deviceCount,
-  onlineCount
+  onlineCount,
+  networkStats
 }) => {
   const tabs = [
     { id: 'overview', label: 'OVERVIEW' },
@@ -35,6 +42,19 @@ const Header: React.FC<HeaderProps> = ({
           <span className="status-item">
             <span className="status-value">{deviceCount - onlineCount}</span> Offline
           </span>
+          {networkStats && (
+            <>
+              <span className="status-item">
+                <span className="status-value">{networkStats.totalLogs}</span> Network Logs
+              </span>
+              <span className="status-item">
+                <span className="status-value">{networkStats.totalRecords}</span> DB Records
+              </span>
+              <span className="status-item">
+                <span className="status-value">{networkStats.totalConnections}</span> Connections
+              </span>
+            </>
+          )}
         </div>
       </div>
       

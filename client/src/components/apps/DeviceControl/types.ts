@@ -20,6 +20,34 @@ export interface Device {
     encryption: boolean;
     updates: boolean;
   };
+  capabilities?: DeviceCapabilities;
+  data?: any; // Device-specific data storage
+}
+
+export interface DeviceCapabilities {
+  canConnect?: boolean;
+  canExecuteCommands?: boolean;
+  canStoreData?: boolean;
+  canRoute?: boolean;
+  canMonitor?: boolean;
+  hasFileSystem?: boolean;
+}
+
+export interface DatabaseRecord {
+  id: string;
+  table: string;
+  data: any;
+  timestamp: Date;
+  deviceId: string;
+}
+
+export interface NetworkData {
+  id: string;
+  sourceDevice: string;
+  targetDevice: string;
+  data: any;
+  timestamp: Date;
+  type: 'sync' | 'backup' | 'command' | 'file';
 }
 
 export interface ConnectionAnimation {

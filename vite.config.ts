@@ -21,17 +21,30 @@ export default defineConfig({
   server: {
     port: 5000,
     host: true,
+    fs: {
+      allow: ['..']
+    }
   },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      "@assets": path.resolve(import.meta.dirname, "client", "public"),
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
   build: {
     outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
+  },
+  optimizeDeps: {
+    exclude: ['pyodide'],
+    include: []
+  },
+  worker: {
+    format: 'es'
+  },
+  define: {
+    global: 'globalThis',
   },
 });

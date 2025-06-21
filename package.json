@@ -71,7 +71,7 @@
     "express-session": "^1.18.1",
     "firebase": "^11.6.0",
     "framer-motion": "^11.13.1",
-    "idb": "^8.0.2",
+    "idb": "^8.0.3",
     "input-otp": "^1.2.4",
     "isolated-vm": "^5.0.4",
     "lucide-react": "^0.453.0",

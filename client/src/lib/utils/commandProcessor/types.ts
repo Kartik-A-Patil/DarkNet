@@ -1,4 +1,3 @@
-import { CommandResult } from '../../../types/os.types';
 import { FileSystemNode } from '../filesystem';
 
 export interface CommandResult {

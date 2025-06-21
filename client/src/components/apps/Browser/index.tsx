@@ -8,7 +8,12 @@ import RenderFrame from './components/RenderFrame';
 import FileDialog from '../../common/FileDialog';
 import BookmarkManager from './components/BookmarkManager';
 
-const Browser: React.FC = () => {
+interface BrowserProps {
+  filePath?: string;
+  shouldOpenFile?: boolean;
+}
+
+const Browser: React.FC<BrowserProps> = ({ filePath, shouldOpenFile }) => {
   const { fileSystem } = useOS();
   const { toast } = useToast();
   const [tabs, setTabs] = useState<BrowserTab[]>([
@@ -29,6 +34,14 @@ const Browser: React.FC = () => {
 
   // Supported file extensions for browser
   const supportedExtensions = ['html', 'htm', 'css', 'js', 'txt', 'md', 'json', 'xml'];
+
+  // Handle opening file on mount
+  useEffect(() => {
+    if (shouldOpenFile && filePath) {
+      // Close welcome tab and open the file
+      openFileInBrowser(filePath);
+    }
+  }, [shouldOpenFile, filePath]);
 
   // Get active tab
   const activeTab = tabs.find(tab => tab.id === activeTabId);
@@ -52,7 +65,7 @@ const Browser: React.FC = () => {
   };
 
   // Open file in browser
-  const openFile = async (filePath: string) => {
+  const openFileInBrowser = async (filePath: string) => {
     const fileName = filePath.split('/').pop() || 'Unknown';
     const extension = fileName.split('.').pop()?.toLowerCase();
     
@@ -99,14 +112,14 @@ const Browser: React.FC = () => {
   // Handle file selection from dialog
   const handleFileSelect = (filePath: string) => {
     setShowFileExplorer(false);
-    openFile(filePath);
+    openFileInBrowser(filePath);
   };
 
   // Navigate to URL
   const navigateToUrl = (url: string) => {
     if (url.startsWith('file://')) {
       const filePath = url.replace('file://', '');
-      openFile(filePath);
+      openFileInBrowser(filePath);
     } else if (url.startsWith('browser://')) {
       handleSpecialUrl(url);
     } else {

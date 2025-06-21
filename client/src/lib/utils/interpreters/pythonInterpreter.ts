@@ -22,7 +22,10 @@ export class PythonInterpreter extends Interpreter {
         const pyodideModule = await import('pyodide');
         
         this.pyodide = await pyodideModule.loadPyodide({
-          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.5/full/"
+          // Use local or CDN based on environment
+          indexURL: import.meta.env.DEV 
+            ? "https://cdn.jsdelivr.net/pyodide/v0.27.5/full/"
+            : "/pyodide/"
           // Don't specify stderr handler to avoid the WebAssembly error
           // We'll capture stderr ourselves using StringIO
         });

@@ -1,0 +1,44 @@
+/* Clean and minimal context menu styles for FileManager */
+
+.context-menu-item {
+  @apply px-3 py-1.5 text-sm cursor-pointer flex items-center space-x-3;
+  transition: background-color 0.1s ease;
+}
+
+.context-menu-item:hover:not(.disabled):not(.separator) {
+  @apply bg-gray-700;
+}
+
+.context-menu-item.disabled {
+  @apply opacity-40 cursor-not-allowed;
+}
+
+.context-menu-item.separator {
+  @apply border-t border-gray-600 h-px p-0 my-1;
+  cursor: default;
+}
+
+.context-menu-item i {
+  @apply w-4 text-center text-gray-400;
+}
+
+/* Section headers in context menu - simplified */
+.context-menu-section {
+  @apply text-xs font-medium text-gray-500 px-3 py-1 uppercase tracking-wide border-b border-gray-700 mb-1;
+}
+
+/* Minimal animation for context menu appearance */
+.context-menu {
+  animation: contextMenuFadeIn 0.1s ease-out;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

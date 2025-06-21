@@ -204,43 +204,31 @@
   -webkit-box-orient: vertical;
 }
 
-/* Enhanced file manager styles */
+/* Enhanced file manager styles - cleaned up */
 .file-browser-item {
-  @apply flex items-center p-2 rounded hover:bg-gray-700 cursor-pointer;
+  @apply flex items-center p-2 rounded hover:bg-gray-800 cursor-pointer transition-colors;
 }
 
 .file-browser-item i {
-  @apply mr-2;
+  @apply mr-2 text-gray-400;
 }
 
-.file-breadcrumb {
-  @apply flex items-center text-sm bg-gray-800 p-1 rounded overflow-x-auto;
-}
-
-.file-breadcrumb-item {
-  @apply flex items-center hover:underline cursor-pointer;
-}
-
-.file-breadcrumb-separator {
-  @apply mx-1 text-gray-500;
-}
-
-/* Context menu */
+/* Context menu - minimal styling */
 .context-menu {
-  @apply absolute z-50 bg-gray-800 shadow-lg rounded overflow-hidden;
+  @apply absolute z-50 bg-gray-800 shadow-xl rounded border border-gray-600;
   min-width: 160px;
 }
 
 .context-menu-item {
-  @apply flex items-center px-3 py-2 hover:bg-accent hover:bg-opacity-20 cursor-pointer text-sm;
+  @apply flex items-center px-3 py-2 hover:bg-gray-700 cursor-pointer text-sm text-gray-300 transition-colors;
 }
 
 .context-menu-item i {
-  @apply mr-2 text-xs w-4;
+  @apply mr-2 text-xs w-4 text-gray-400;
 }
 
 .context-menu-separator {
-  @apply border-t border-gray-700 my-1;
+  @apply border-t border-gray-600 my-1;
 }
 
 /* Dialog styles */
