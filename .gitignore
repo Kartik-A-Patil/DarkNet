@@ -120,3 +120,5 @@ firestore-debug.log
 # Custom
 bin/
 vite.config.ts.*
+# Local Netlify folder
+.netlify
