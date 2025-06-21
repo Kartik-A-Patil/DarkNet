@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #00ff41;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #00ff88;
+        }
+        button {
+            background: #00ff41;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Dialog Test</h1>
+    <p>This file should be visible in the browser's file dialog!</p>
+    <button onclick="showMessage()">Click Me</button>
+    <div id="message"></div>
+    
+    <script>
+        function showMessage() {
+            document.getElementById('message').innerHTML = 'JavaScript is working!';
+        }
+    </script>
+</body>
+</html>

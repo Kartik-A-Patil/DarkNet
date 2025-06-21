@@ -1,0 +1,315 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&family=Ubuntu+Mono&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --desktop-wallpaper: url('/wallpapers/kali-default.svg');
+    --accent: 8 113 208; /* Default accent color RGB */
+  }
+  
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-ubuntu antialiased text-text;
+  }
+
+  /* Theme-specific styles */
+  [data-theme="light"] {
+    --background: 255 255 255;
+    --foreground: 0 0 0;
+    --muted: 245 245 245;
+    --muted-foreground: 115 115 115;
+    --popover: 255 255 255;
+    --popover-foreground: 0 0 0;
+    --border: 229 229 229;
+    --input: 229 229 229;
+    --card: 255 255 255;
+    --card-foreground: 0 0 0;
+    --primary: var(--accent);
+    --primary-foreground: 255 255 255;
+    --secondary: 245 245 245;
+    --secondary-foreground: 23 23 23;
+  }
+
+  [data-theme="dark"] {
+    --background: 17 17 17;
+    --foreground: 224 224 224;
+    --muted: 38 38 38;
+    --muted-foreground: 153 153 153;
+    --popover: 17 17 17;
+    --popover-foreground: 224 224 224;
+    --border: 64 64 64;
+    --input: 64 64 64;
+    --card: 17 17 17;
+    --card-foreground: 224 224 224;
+    --primary: var(--accent);
+    --primary-foreground: 255 255 255;
+    --secondary: 38 38 38;
+    --secondary-foreground: 224 224 224;
+  }
+}
+
+/* Linux OS specific styles */
+#desktop {
+  background-image: var(--desktop-wallpaper);
+  background-size: cover;
+  background-position: center;
+  @apply bg-kali-dark;
+}
+
+.bg-terminal {
+  @apply bg-black;
+}
+
+.bg-window {
+  @apply bg-gray-900;
+}
+
+.bg-header {
+  @apply bg-gray-800;
+}
+
+/* Window animations */
+.window-open {
+  animation: scale-in 0.2s ease-out;
+}
+
+.window-minimize {
+  animation: scale-out 0.2s ease-out;
+}
+
+@keyframes scale-out {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
+
+@keyframes scale-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  25% { transform: scale(1.05); opacity: 1; }
+  50% { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glitch {
+  0%, 100% { transform: translateX(0); filter: hue-rotate(0deg); }
+  20% { transform: translateX(-2px); filter: hue-rotate(90deg); }
+  40% { transform: translateX(2px); filter: hue-rotate(180deg); }
+  60% { transform: translateX(-2px); filter: hue-rotate(270deg); }
+  80% { transform: translateX(2px); filter: hue-rotate(360deg); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes matrixRain {
+  0% {
+    background-color: rgba(0, 255, 0, 0);
+    color: inherit;
+  }
+  50% {
+    background-color: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+  }
+  100% {
+    background-color: rgba(0, 255, 0, 0);
+    color: inherit;
+  }
+}
+
+@keyframes accessGranted {
+  0% {
+    background-color: transparent;
+    color: inherit;
+  }
+  50% {
+    background-color: rgba(0, 255, 0, 0.3);
+    color: #00ff00;
+  }
+  100% {
+    background-color: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes accessDenied {
+  0% {
+    background-color: transparent;
+    color: inherit;
+  }
+  50% {
+    background-color: rgba(255, 0, 0, 0.3);
+    color: #ff0000;
+  }
+  100% {
+    background-color: transparent;
+    color: inherit;
+  }
+}
+
+@keyframes networkScan {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
+  }
+}
+
+/* Desktop icons */
+.desktop-icon {
+  @apply flex flex-col items-center justify-center p-2 rounded hover:bg-white hover:bg-opacity-10 cursor-pointer;
+  width: 80px;
+  height: 80px;
+  text-align: center;
+}
+
+.desktop-icon i {
+  @apply text-2xl mb-1;
+}
+
+.desktop-icon span {
+  @apply text-xs;
+  word-break: break-word;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Enhanced file manager styles */
+.file-browser-item {
+  @apply flex items-center p-2 rounded hover:bg-gray-700 cursor-pointer;
+}
+
+.file-browser-item i {
+  @apply mr-2;
+}
+
+.file-breadcrumb {
+  @apply flex items-center text-sm bg-gray-800 p-1 rounded overflow-x-auto;
+}
+
+.file-breadcrumb-item {
+  @apply flex items-center hover:underline cursor-pointer;
+}
+
+.file-breadcrumb-separator {
+  @apply mx-1 text-gray-500;
+}
+
+/* Context menu */
+.context-menu {
+  @apply absolute z-50 bg-gray-800 shadow-lg rounded overflow-hidden;
+  min-width: 160px;
+}
+
+.context-menu-item {
+  @apply flex items-center px-3 py-2 hover:bg-accent hover:bg-opacity-20 cursor-pointer text-sm;
+}
+
+.context-menu-item i {
+  @apply mr-2 text-xs w-4;
+}
+
+.context-menu-separator {
+  @apply border-t border-gray-700 my-1;
+}
+
+/* Dialog styles */
+.os-dialog {
+  @apply fixed inset-0 z-50 flex items-center justify-center;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.os-dialog-content {
+  @apply bg-window rounded-md shadow-lg p-4 max-w-md w-full;
+}
+
+.os-dialog-title {
+  @apply text-lg font-medium mb-2;
+}
+
+.os-dialog-actions {
+  @apply flex justify-end mt-4 space-x-2;
+}
+
+/* Wallpaper selector */
+.wallpaper-thumbnail {
+  @apply border-2 rounded cursor-pointer overflow-hidden;
+  width: 120px;
+  height: 67px;
+}
+
+.wallpaper-thumbnail.active {
+  @apply border-accent;
+}
+
+/* Taskbar styles */
+.taskbar-apps {
+  scrollbar-width: none;
+}
+
+.taskbar-apps::-webkit-scrollbar {
+  display: none;
+}
+
+.taskbar-app-button {
+  position: relative;
+  min-width: 100px;
+}
+
+.taskbar-app-button .taskbar-app-indicator {
+  position: absolute;
+  height: 2px;
+  width: 40%;
+  background-color: #3b82f6;
+  bottom: 0;
+  left: 30%;
+  border-radius: 2px 2px 0 0;
+}
+
+/* Make scrollbars thin and styled */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-600;
+}
