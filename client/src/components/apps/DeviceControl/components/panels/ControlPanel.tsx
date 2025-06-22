@@ -2,8 +2,8 @@ import React from 'react';
 import { Device } from '../../types';
 import DatabaseInterface from '../interfaces/DatabaseInterface';
 import RouterInterface from '../interfaces/RouterInterface';
-import ComputerInterface from '../interfaces/ComputerInterface';
-import ServerInterface from '../interfaces/ServerInterface';
+import NASInterface from '../interfaces/NASInterface';
+import CameraInterface from '../interfaces/CameraInterface';
 import IoTInterface from '../interfaces/IoTInterface';
 
 interface ControlPanelProps {
@@ -21,132 +21,151 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onRestartDevice,
   onUpdateDevice
 }) => {
+  const handleOpenFileManager = () => {
+    // This should trigger opening the File Manager with network view
+    // For now, we'll show an alert
+    alert('Opening File Manager with Network view...\nThis would show network storage and allow browsing shared folders.');
+  };
+
   if (!selectedDevice) {
     return (
       <div className="h-full bg-black flex items-center justify-center">
         <div className="text-center text-gray-500">
           <div className="text-4xl mb-4">⚙️</div>
-          <div>SELECT A DEVICE TO CONTROL</div>
+          <div className="text-xl mb-2">SELECT A DEVICE TO CONTROL</div>
+          <div className="text-sm text-gray-400">
+            Choose a device from the sidebar to access its management interface
+          </div>
         </div>
       </div>
     );
   }
 
   const renderDeviceInterface = () => {
-    const commonProps = {
-      device: selectedDevice,
-      onUpdate: onUpdateDevice
-    };
-
     switch (selectedDevice.type) {
       case 'database':
-        return <DatabaseInterface {...commonProps} />;
+        return (
+          <DatabaseInterface
+            device={selectedDevice}
+            onUpdateDevice={onUpdateDevice}
+          />
+        );
       case 'router':
-        return <RouterInterface {...commonProps} />;
-      case 'computer':
-        return <ComputerInterface {...commonProps} />;
-      case 'server':
-        return <ServerInterface {...commonProps} />;
+        return (
+          <RouterInterface
+            device={selectedDevice}
+            onUpdateDevice={onUpdateDevice}
+          />
+        );
+      case 'nas':
+        return (
+          <NASInterface
+            device={selectedDevice}
+            onUpdateDevice={onUpdateDevice}
+            onOpenFileManager={handleOpenFileManager}
+          />
+        );
+      case 'camera':
+        return (
+          <CameraInterface
+            device={selectedDevice}
+            onUpdateDevice={onUpdateDevice}
+          />
+        );
       case 'iot':
-        return <IoTInterface {...commonProps} />;
+        return (
+          <IoTInterface
+            device={selectedDevice}
+            onUpdateDevice={onUpdateDevice}
+          />
+        );
       default:
-        return <DefaultInterface {...commonProps} />;
+        return (
+          <div className="h-full bg-black p-6">
+            <div className="control-section">
+              <h3 className="control-title">DEVICE CONTROL - {selectedDevice.name}</h3>
+              
+              <div className="controls-grid">
+                {/* Power Control */}
+                <div className="control-group">
+                  <h4>POWER</h4>
+                  <div className="control-buttons">
+                    <button
+                      className="control-btn power"
+                      onClick={() => onToggleDevice(selectedDevice.id)}
+                    >
+                      {selectedDevice.status === 'online' ? 'SHUTDOWN' : 'POWER ON'}
+                    </button>
+                    <button
+                      className="control-btn restart"
+                      onClick={() => onRestartDevice(selectedDevice.id)}
+                      disabled={selectedDevice.status === 'offline'}
+                    >
+                      RESTART
+                    </button>
+                  </div>
+                </div>
+
+                {/* Network Control */}
+                <div className="control-group">
+                  <h4>NETWORK</h4>
+                  <div className="control-field">
+                    <label>IP ADDRESS:</label>
+                    <input 
+                      type="text" 
+                      value={selectedDevice.ip} 
+                      className="control-input"
+                      onChange={(e) => onUpdateDevice(selectedDevice.id, { ip: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Status Display */}
+                <div className="control-group">
+                  <h4>STATUS</h4>
+                  <div className="status-display">
+                    <div className="status-item">
+                      STATUS: <span className={`status-value ${selectedDevice.status}`}>
+                        {selectedDevice.status.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="status-item">
+                      TYPE: <span className="status-value">{selectedDevice.type.toUpperCase()}</span>
+                    </div>
+                    {selectedDevice.cpu && (
+                      <div className="status-item">
+                        CPU: <span className="status-value">{selectedDevice.cpu.toFixed(1)}%</span>
+                      </div>
+                    )}
+                    {selectedDevice.memory && (
+                      <div className="status-item">
+                        MEMORY: <span className="status-value">{selectedDevice.memory.toFixed(1)}%</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Device-specific info */}
+                <div className="control-group">
+                  <h4>CAPABILITIES</h4>
+                  <div className="capabilities-list">
+                    {(selectedDevice.capabilities || []).map((capability, index) => (
+                      <span key={index} className="capability-tag">
+                        {capability}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
     }
   };
 
   return (
-    <div className="h-full bg-black p-6 overflow-y-auto">
-      <div className="control-section">
-        <h3 className="control-title">DEVICE CONTROL - {selectedDevice.name}</h3>
-        
-        {/* Basic Device Controls */}
-        <div className="basic-controls">
-          <div className="control-group">
-            <h4>BASIC CONTROLS</h4>
-            <div className="control-buttons">
-              <button
-                className="control-btn power"
-                onClick={() => onToggleDevice(selectedDevice.id)}
-              >
-                {selectedDevice.status === 'online' ? 'SHUTDOWN' : 'POWER ON'}
-              </button>
-              <button
-                className="control-btn restart"
-                onClick={() => onRestartDevice(selectedDevice.id)}
-                disabled={selectedDevice.status === 'offline'}
-              >
-                RESTART
-              </button>
-            </div>
-          </div>
-
-          {/* Device Info */}
-          <div className="control-group">
-            <h4>DEVICE INFO</h4>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">TYPE:</span>
-                <span className="info-value">{selectedDevice.type.toUpperCase()}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">STATUS:</span>
-                <span className={`info-value status-${selectedDevice.status}`}>
-                  {selectedDevice.status.toUpperCase()}
-                </span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">IP:</span>
-                <span className="info-value">{selectedDevice.ip}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">OS:</span>
-                <span className="info-value">{selectedDevice.os || 'Unknown'}</span>
-              </div>
-              {selectedDevice.uptime && (
-                <div className="info-item">
-                  <span className="info-label">UPTIME:</span>
-                  <span className="info-value">{selectedDevice.uptime}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Device-Specific Interface */}
-        <div className="device-interface">
-          {renderDeviceInterface()}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Default interface for unsupported device types
-const DefaultInterface: React.FC<{ device: Device; onUpdate: (deviceId: string, data: any) => void }> = ({ device, onUpdate }) => {
-  return (
-    <div className="default-interface">
-      <h4>BASIC DEVICE INTERFACE</h4>
-      <div className="default-info">
-        <p>This device type ({device.type}) does not have a specialized interface yet.</p>
-        <div className="device-services">
-          <h5>SERVICES:</h5>
-          <div className="services-list">
-            {device.services?.map((service: string) => (
-              <div key={service} className="service-item">
-                {service}
-              </div>
-            ))}
-          </div>
-        </div>
-        {device.data && (
-          <div className="device-data">
-            <h5>DEVICE DATA:</h5>
-            <pre className="data-display">
-              {JSON.stringify(device.data, null, 2)}
-            </pre>
-          </div>
-        )}
-      </div>
+    <div className="main-panel h-full">
+      {renderDeviceInterface()}
     </div>
   );
 };

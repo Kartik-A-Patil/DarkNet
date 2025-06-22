@@ -19,6 +19,10 @@ export function formatDirectory(dirName: string): string {
   return `<span class="directory">${dirName}</span>`;
 }
 
+export function formatOutput(text: string): string {
+  return text;
+}
+
 export function formatPath(path: string): string {
   return `<span class="path">${path}</span>`;
 }

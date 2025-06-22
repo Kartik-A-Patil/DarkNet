@@ -7,6 +7,7 @@ import NavigationBar from './components/NavigationBar';
 import RenderFrame from './components/RenderFrame';
 import FileDialog from '../../common/FileDialog';
 import BookmarkManager from './components/BookmarkManager';
+import { DeviceNetworkBrowser } from '../DeviceControl/browser/NetworkBrowser';
 
 interface BrowserProps {
   filePath?: string;
@@ -16,6 +17,7 @@ interface BrowserProps {
 const Browser: React.FC<BrowserProps> = ({ filePath, shouldOpenFile }) => {
   const { fileSystem } = useOS();
   const { toast } = useToast();
+  const networkBrowser = DeviceNetworkBrowser.getInstance();
   const [tabs, setTabs] = useState<BrowserTab[]>([
     {
       id: 'welcome',
@@ -42,6 +44,11 @@ const Browser: React.FC<BrowserProps> = ({ filePath, shouldOpenFile }) => {
       openFileInBrowser(filePath);
     }
   }, [shouldOpenFile, filePath]);
+
+  // Initialize network browser
+  useEffect(() => {
+    networkBrowser.initialize();
+  }, []);
 
   // Get active tab
   const activeTab = tabs.find(tab => tab.id === activeTabId);
@@ -116,19 +123,75 @@ const Browser: React.FC<BrowserProps> = ({ filePath, shouldOpenFile }) => {
   };
 
   // Navigate to URL
-  const navigateToUrl = (url: string) => {
-    if (url.startsWith('file://')) {
-      const filePath = url.replace('file://', '');
-      openFileInBrowser(filePath);
-    } else if (url.startsWith('browser://')) {
-      handleSpecialUrl(url);
-    } else {
-      // Handle external URLs (show warning)
-      toast({
-        title: 'External URL Blocked',
-        description: 'This browser only supports local files for security reasons',
-        variant: 'destructive'
-      });
+  const navigateToUrl = async (url: string) => {
+    const tabId = `nav-${Date.now()}`;
+    
+    // Create new tab
+    const newTab: BrowserTab = {
+      id: tabId,
+      title: 'Loading...',
+      url,
+      isActive: true,
+      isLoading: true
+    };
+    
+    setTabs(prev => prev.map(tab => ({ ...tab, isActive: false })).concat(newTab));
+    setActiveTabId(tabId);
+
+    try {
+      if (url.startsWith('file://')) {
+        const filePath = url.replace('file://', '');
+        await openFileInBrowser(filePath);
+        return;
+      }
+
+      // Use DeviceNetworkBrowser for all other URLs
+      const result = await networkBrowser.resolveURL(url);
+      
+      if (result.success) {
+        setTabs(prev => prev.map(tab => 
+          tab.id === tabId 
+            ? { 
+                ...tab, 
+                content: result.content,
+                title: extractTitle(result.content || '') || url,
+                isLoading: false,
+                error: undefined
+              }
+            : tab
+        ));
+
+        // Add to history
+        setHistory(prev => [...prev, {
+          url,
+          title: extractTitle(result.content || '') || url,
+          timestamp: new Date()
+        }]);
+      } else {
+        setTabs(prev => prev.map(tab => 
+          tab.id === tabId 
+            ? { 
+                ...tab, 
+                content: generateErrorPage(result.error || 'Unknown error', url),
+                title: 'Error',
+                isLoading: false,
+                error: result.error
+              }
+            : tab
+        ));
+      }
+    } catch (error) {
+      setTabs(prev => prev.map(tab => 
+        tab.id === tabId 
+          ? { 
+              ...tab, 
+              content: generateErrorPage(error instanceof Error ? error.message : 'Network error', url),
+              title: 'Error',
+              isLoading: false,
+              error: error instanceof Error ? error.message : 'Network error'
+            }
+          : tab
+      ));
     }
   };
 
@@ -255,6 +318,91 @@ const Browser: React.FC<BrowserProps> = ({ filePath, shouldOpenFile }) => {
   // Remove bookmark
   const removeBookmark = (bookmarkId: string) => {
     setBookmarks(prev => prev.filter(b => b.id !== bookmarkId));
+  };
+
+  // Helper methods
+  const extractTitle = (html: string): string | null => {
+    if (!html) return null;
+    const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+    return titleMatch ? titleMatch[1] : null;
+  };
+
+  const generateErrorPage = (error: string, url: string): string => {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error - DarkNet Browser</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #ff4444;
+            padding: 40px;
+            text-align: center;
+        }
+        .error-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            padding: 40px;
+            border-radius: 10px;
+        }
+        .error-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #ff4444;
+        }
+        .error-message {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #ffffff;
+        }
+        .error-url {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            color: #888;
+            word-break: break-all;
+            margin-bottom: 30px;
+        }
+        .suggestions {
+            text-align: left;
+            color: #00ff41;
+        }
+        .suggestions li {
+            margin: 10px 0;
+        }
+        a {
+            color: #00ff41;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-title">⚠️ CONNECTION ERROR</div>
+        <div class="error-message">${error}</div>
+        <div class="error-url">URL: ${url}</div>
+        
+        <div class="suggestions">
+            <h3>Troubleshooting suggestions:</h3>
+            <ul>
+                <li>Check if the target device is online</li>
+                <li>Verify the IP address or hostname</li>
+                <li>Ensure the service is running on the target port</li>
+                <li>Check network connectivity</li>
+                <li><a href="browser://network">View network status</a></li>
+                <li><a href="browser://devices">Manage devices</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>`;
   };
 
   // Keyboard shortcuts

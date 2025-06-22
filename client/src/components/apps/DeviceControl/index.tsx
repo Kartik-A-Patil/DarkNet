@@ -1,167 +1,231 @@
 import React, { useState, useEffect } from 'react';
+import './styles/DeviceControl.css';
 import { Device } from './types';
 import { mockDevices } from './data/mockDevices';
-import { logNetworkActivity, getNetworkStats } from './utils/networkDatabase';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MainPanel from './components/MainPanel';
-import './styles/DeviceControl.css';
+import WelcomeScreen from './components/WelcomeScreen';
+import NetworkManager from './core/NetworkManager';
+import RealWorldController from './core/RealWorldController';
 
 const DeviceControl: React.FC = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'control' | 'monitoring' | 'security' | 'topology'>('overview');
-  const [networkStats, setNetworkStats] = useState<any>(null);
 
-  // Initialize devices and network database
+  // Initialize devices and start real-world simulation
   useEffect(() => {
-    setDevices(mockDevices);
-    loadNetworkStats();
+    // Initialize with mock devices but register them in NetworkManager
+    const initializedDevices = mockDevices.map(device => {
+      const deviceId = NetworkManager.registerDevice(device);
+      return { ...device, id: deviceId };
+    });
+    
+    setDevices(initializedDevices);
+
+    // Start some default services
+    initializeDefaultServices(initializedDevices);
+
+    // Start network simulation
+    NetworkManager.startNetworkSimulation();
   }, []);
 
-  const loadNetworkStats = async () => {
-    try {
-      const stats = await getNetworkStats();
-      setNetworkStats(stats);
-    } catch (error) {
-      console.error('Failed to load network stats:', error);
+  const initializeDefaultServices = async (deviceList: Device[]) => {
+    for (const device of deviceList) {
+      if (device.status === 'online') {
+        try {
+          switch (device.type) {
+            case 'server':
+              // Start HTTP server
+              await RealWorldController.startService(device.id, 'http', {
+                name: `${device.name} Web Server`,
+                type: 'http',
+                port: 80,
+                enabled: true,
+                autoStart: true,
+                config: {
+                  documentRoot: '/var/www/html',
+                  virtualHosts: [
+                    {
+                      serverName: device.ip,
+                      documentRoot: '/var/www/html',
+                      port: 80
+                    }
+                  ]
+                }
+              });
+
+              // Start API server
+              await RealWorldController.startService(device.id, 'api', {
+                name: `${device.name} API`,
+                type: 'api',
+                port: 8080,
+                enabled: true,
+                autoStart: true,
+                config: {
+                  endpoints: [
+                    { path: '/api/status', method: 'GET', handler: 'getStatus' },
+                    { path: '/api/metrics', method: 'GET', handler: 'getMetrics' },
+                    { path: '/api/logs', method: 'GET', handler: 'getLogs' }
+                  ]
+                }
+              });
+              break;
+
+            case 'database':
+              await RealWorldController.startService(device.id, 'database', {
+                name: `${device.name} Database`,
+                type: 'database',
+                port: 3306,
+                enabled: true,
+                autoStart: true,
+                config: {
+                  engine: 'mysql',
+                  database: 'darknet',
+                  maxConnections: 200
+                }
+              });
+              break;
+
+            case 'router':
+              // Enable port forwarding for web server
+              const webServer = deviceList.find(d => d.type === 'server');
+              if (webServer) {
+                await RealWorldController.enablePortForwarding(device.id, 8080, webServer.id, 80);
+                await RealWorldController.enablePortForwarding(device.id, 8081, webServer.id, 8080);
+              }
+              break;
+
+            case 'nas':
+              // Create network storage
+              RealWorldController.createNetworkStorage(device.id, 'documents', '/media/documents', 'rw');
+              RealWorldController.createNetworkStorage(device.id, 'backups', '/media/backups', 'r');
+              break;
+          }
+        } catch (error) {
+          console.error(`Failed to initialize services for ${device.name}:`, error);
+        }
+      }
     }
   };
 
   // Handle device selection
   const handleDeviceSelect = (device: Device) => {
     setSelectedDevice(device);
-    
-    // Log device access
-    logNetworkActivity({
-      sourceDevice: 'current',
-      targetDevice: device.id,
-      data: { action: 'device_selected', deviceName: device.name },
-      type: 'command'
-    });
+    // Auto-switch to control tab when selecting a device for better UX
+    if (activeTab === 'overview') {
+      setActiveTab('control');
+    }
   };
 
   // Handle device toggle (power on/off)
-  const handleToggleDevice = async (deviceId: string) => {
-    const device = devices.find(d => d.id === deviceId);
-    if (!device) return;
-
-    const newStatus = device.status === 'online' ? 'offline' : 'online';
-    
-    setDevices(prev => prev.map(d => 
-      d.id === deviceId 
-        ? { ...d, status: newStatus }
-        : d
+  const handleToggleDevice = (deviceId: string) => {
+    setDevices(prev => prev.map(device => 
+      device.id === deviceId 
+        ? { ...device, status: device.status === 'online' ? 'offline' : 'online' }
+        : device
     ));
-
-    // Log the power state change
-    await logNetworkActivity({
-      sourceDevice: 'current',
-      targetDevice: deviceId,
-      data: { 
-        action: 'power_toggle', 
-        previousStatus: device.status,
-        newStatus: newStatus
-      },
-      type: 'command'
-    });
-
+    
     // Update selected device if it's the one being toggled
     if (selectedDevice?.id === deviceId) {
-      setSelectedDevice(prev => prev ? { ...prev, status: newStatus } : null);
+      setSelectedDevice(prev => prev ? {
+        ...prev,
+        status: prev.status === 'online' ? 'offline' : 'online'
+      } : null);
     }
   };
 
   // Handle device restart
-  const handleRestartDevice = async (deviceId: string) => {
-    const device = devices.find(d => d.id === deviceId);
-    if (!device) return;
-
-    setDevices(prev => prev.map(d => 
-      d.id === deviceId 
-        ? { ...d, status: 'connecting' }
-        : d
+  const handleRestartDevice = (deviceId: string) => {
+    setDevices(prev => prev.map(device => 
+      device.id === deviceId 
+        ? { ...device, status: 'connecting' }
+        : device
     ));
     
-    // Log restart command
-    await logNetworkActivity({
-      sourceDevice: 'current',
-      targetDevice: deviceId,
-      data: { 
-        action: 'restart_device', 
-        deviceName: device.name,
-        previousUptime: device.uptime
-      },
-      type: 'command'
-    });
+    // Update selected device
+    if (selectedDevice?.id === deviceId) {
+      setSelectedDevice(prev => prev ? { ...prev, status: 'connecting' } : null);
+    }
     
-    // Simulate restart
-    setTimeout(async () => {
-      setDevices(prev => prev.map(d => 
-        d.id === deviceId 
-          ? { ...d, status: 'online', uptime: '0 days, 0:00:01' }
-          : d
+    // Simulate restart process
+    setTimeout(() => {
+      setDevices(prev => prev.map(device => 
+        device.id === deviceId 
+          ? { ...device, status: 'online' }
+          : device
       ));
-
-      // Log restart completion
-      await logNetworkActivity({
-        sourceDevice: 'current',
-        targetDevice: deviceId,
-        data: { action: 'restart_completed', deviceName: device.name },
-        type: 'command'
-      });
-
-      // Update selected device
+      
       if (selectedDevice?.id === deviceId) {
-        setSelectedDevice(prev => prev ? { 
-          ...prev, 
-          status: 'online', 
-          uptime: '0 days, 0:00:01' 
-        } : null);
+        setSelectedDevice(prev => prev ? { ...prev, status: 'online' } : null);
       }
     }, 3000);
   };
 
   // Handle device settings update
-  const handleUpdateDevice = async (deviceId: string, updates: any) => {
-    const device = devices.find(d => d.id === deviceId);
-    if (!device) return;
-
-    setDevices(prev => prev.map(d => 
-      d.id === deviceId 
-        ? { ...d, ...updates }
-        : d
+  const handleUpdateDevice = (deviceId: string, settings: any) => {
+    setDevices(prev => prev.map(device => 
+      device.id === deviceId 
+        ? { ...device, ...settings }
+        : device
     ));
-
-    // Log device update
-    await logNetworkActivity({
-      sourceDevice: 'current',
-      targetDevice: deviceId,
-      data: { 
-        action: 'device_updated', 
-        deviceName: device.name,
-        updates: Object.keys(updates)
-      },
-      type: 'command'
-    });
-
+    
     // Update selected device
     if (selectedDevice?.id === deviceId) {
-      setSelectedDevice(prev => prev ? { ...prev, ...updates } : null);
+      setSelectedDevice(prev => prev ? { ...prev, ...settings } : null);
     }
-
-    // Refresh network stats
-    loadNetworkStats();
   };
+
+  // Enhanced update function for nested config updates
+  const handleUpdateDeviceConfig = (deviceId: string, configUpdates: any) => {
+    setDevices(prev => prev.map(device => 
+      device.id === deviceId 
+        ? { 
+            ...device, 
+            config: { 
+              ...device.config, 
+              ...configUpdates 
+            } 
+          }
+        : device
+    ));
+    
+    // Update selected device
+    if (selectedDevice?.id === deviceId) {
+      setSelectedDevice(prev => prev ? { 
+        ...prev, 
+        config: { 
+          ...prev.config, 
+          ...configUpdates 
+        } 
+      } : null);
+    }
+  };
+
+  // Get device statistics for header
+  const getDeviceStats = () => {
+    const total = devices.length;
+    const online = devices.filter(d => d.status === 'online').length;
+    const offline = devices.filter(d => d.status === 'offline').length;
+    const connecting = devices.filter(d => d.status === 'connecting').length;
+    const errors = devices.filter(d => d.status === 'error').length;
+    
+    return { total, online, offline, connecting, errors };
+  };
+
+  const stats = getDeviceStats();
 
   return (
     <div className="device-control">
       <Header 
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        deviceCount={devices.length}
-        onlineCount={devices.filter(d => d.status === 'online').length}
-        networkStats={networkStats}
+        deviceCount={stats.total}
+        onlineCount={stats.online}
+        offlineCount={stats.offline}
+        connectingCount={stats.connecting}
+        errorCount={stats.errors}
       />
       
       <div className="device-control-content">
@@ -178,7 +242,14 @@ const DeviceControl: React.FC = () => {
           onDeviceSelect={handleDeviceSelect}
           onToggleDevice={handleToggleDevice}
           onRestartDevice={handleRestartDevice}
-          onUpdateDevice={handleUpdateDevice}
+          onUpdateDevice={(deviceId, settings) => {
+            // Check if we're updating config specifically
+            if (settings.config) {
+              handleUpdateDeviceConfig(deviceId, settings.config);
+            } else {
+              handleUpdateDevice(deviceId, settings);
+            }
+          }}
         />
       </div>
     </div>

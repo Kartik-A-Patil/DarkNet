@@ -16,17 +16,15 @@ export const mockDevices: Device[] = [
     storage: 78,
     network: { upload: 125.5, download: 89.2 },
     security: { firewall: true, encryption: true, updates: true },
-    capabilities: {
-      canConnect: true,
-      canExecuteCommands: true,
-      canStoreData: true,
-      canMonitor: true,
-      hasFileSystem: true
-    },
-    data: {
-      tables: ['users', 'sessions', 'logs', 'network_data'],
-      connections: 15,
-      queriesPerSecond: 245
+    accessLevel: 'full',
+    capabilities: ['backup', 'restore', 'monitoring', 'query'],
+    config: {
+      dbEngine: 'MySQL 8.0',
+      connections: 45,
+      maxConnections: 200,
+      backupSchedule: 'Daily at 2:00 AM',
+      autoRestart: true,
+      notifications: true
     }
   },
   {
@@ -43,16 +41,17 @@ export const mockDevices: Device[] = [
     memory: 45,
     network: { upload: 1024, download: 512 },
     security: { firewall: true, encryption: true, updates: false },
-    capabilities: {
-      canConnect: true,
-      canExecuteCommands: true,
-      canRoute: true,
-      canMonitor: true
-    },
-    data: {
-      connectedDevices: 23,
-      routingTable: ['192.168.1.0/24', '10.0.0.0/8'],
-      bandwidth: { total: '1Gbps', used: '340Mbps' }
+    accessLevel: 'full',
+    capabilities: ['port-forwarding', 'bandwidth-control', 'wifi-management', 'firewall'],
+    config: {
+      wifiEnabled: true,
+      bandwidth: { total: 1000, used: 267 },
+      portForwarding: [
+        { port: 80, target: '192.168.1.100' },
+        { port: 22, target: '192.168.1.50' }
+      ],
+      autoRestart: false,
+      notifications: true
     }
   },
   {
@@ -70,17 +69,12 @@ export const mockDevices: Device[] = [
     storage: 56,
     network: { upload: 89.5, download: 156.8 },
     security: { firewall: true, encryption: true, updates: true },
-    capabilities: {
-      canConnect: true,
-      canExecuteCommands: true,
-      canStoreData: true,
-      canMonitor: true,
-      hasFileSystem: true
-    },
-    data: {
-      tools: ['nmap', 'metasploit', 'wireshark', 'burpsuite'],
-      activeScans: 3,
-      discoveredHosts: 45
+    accessLevel: 'full',
+    capabilities: ['remote-access', 'file-sharing', 'security-tools'],
+    config: {
+      autoRestart: false,
+      notifications: true,
+      maintenanceMode: false
     }
   },
   {
@@ -98,21 +92,67 @@ export const mockDevices: Device[] = [
     storage: 23,
     network: { upload: 234.1, download: 78.9 },
     security: { firewall: true, encryption: true, updates: true },
-    capabilities: {
-      canConnect: true,
-      canExecuteCommands: true,
-      canStoreData: true,
-      canMonitor: true,
-      hasFileSystem: true
-    },
-    data: {
-      websites: ['darknet.local', 'admin.darknet.local'],
-      activeConnections: 156,
-      requestsPerSecond: 89
+    accessLevel: 'limited',
+    capabilities: ['web-hosting', 'ssl-management', 'load-balancing'],
+    config: {
+      webServices: ['Apache 2.4', 'PHP 8.0', 'MySQL 5.7'],
+      loadBalancer: false,
+      autoRestart: true,
+      notifications: true
     }
   },
   {
     id: '5',
+    name: 'NAS Storage Server',
+    type: 'nas',
+    status: 'online',
+    ip: '192.168.1.150',
+    lastSeen: new Date(),
+    os: 'FreeNAS 12.0',
+    services: ['SMB', 'FTP', 'NFS', 'RAID'],
+    uptime: '200 days, 15:23:45',
+    cpu: 12,
+    memory: 34,
+    storage: 89,
+    network: { upload: 156.3, download: 234.7 },
+    security: { firewall: true, encryption: true, updates: true },
+    accessLevel: 'full',
+    capabilities: ['storage-management', 'raid-control', 'backup', 'file-sharing'],
+    config: {
+      totalStorage: 8000, // 8TB
+      usedStorage: 7120, // 7.12TB
+      availableStorage: 880, // 880GB
+      storagePrice: 0.15, // $0.15 per GB
+      sharedFolders: ['/media', '/backups', '/documents', '/projects'],
+      autoRestart: true,
+      notifications: true
+    }
+  },
+  {
+    id: '6',
+    name: 'Security Camera #1',
+    type: 'camera',
+    status: 'online',
+    ip: '192.168.1.201',
+    lastSeen: new Date(),
+    os: 'Linux Embedded',
+    services: ['RTSP', 'HTTP'],
+    uptime: '89 days, 12:45:23',
+    cpu: 45,
+    memory: 78,
+    network: { upload: 89.2, download: 12.4 },
+    security: { firewall: false, encryption: true, updates: false },
+    accessLevel: 'read-only',
+    capabilities: ['video-streaming', 'motion-detection', 'recording'],
+    config: {
+      resolution: '1920x1080',
+      recordingEnabled: true,
+      motionDetection: true,
+      notifications: true
+    }
+  },
+  {
+    id: '7',
     name: 'IoT Gateway',
     type: 'iot',
     status: 'connecting',
@@ -125,20 +165,43 @@ export const mockDevices: Device[] = [
     memory: 85,
     network: { upload: 12.3, download: 45.6 },
     security: { firewall: false, encryption: true, updates: false },
-    capabilities: {
-      canConnect: true,
-      canExecuteCommands: false,
-      canStoreData: true,
-      canMonitor: true
-    },
-    data: {
+    accessLevel: 'limited',
+    capabilities: ['sensor-monitoring', 'automation', 'data-collection'],
+    config: {
       sensors: ['temperature', 'humidity', 'motion', 'light'],
-      connectedDevices: 8,
-      mqttMessages: 1245
+      lastReading: {
+        temperature: '22.5°C',
+        humidity: '45%',
+        motion: 'inactive',
+        light: '350 lux'
+      },
+      automationRules: ['Auto lights at sunset', 'Climate control'],
+      notifications: true
     }
   },
   {
-    id: '6',
+    id: '8',
+    name: 'Network Switch',
+    type: 'switch',
+    status: 'online',
+    ip: '192.168.1.2',
+    lastSeen: new Date(),
+    os: 'Cisco IOS',
+    services: ['SNMP', 'Telnet', 'SSH'],
+    uptime: '156 days, 9:12:34',
+    cpu: 8,
+    memory: 25,
+    network: { upload: 2450.5, download: 1876.3 },
+    security: { firewall: true, encryption: true, updates: true },
+    accessLevel: 'full',
+    capabilities: ['port-management', 'vlan-config', 'traffic-monitoring'],
+    config: {
+      autoRestart: false,
+      notifications: true
+    }
+  },
+  {
+    id: '9',
     name: 'Mobile Device',
     type: 'mobile',
     status: 'offline',
@@ -147,6 +210,11 @@ export const mockDevices: Device[] = [
     os: 'Android 13',
     services: ['ADB', 'SSH'],
     uptime: '0 days, 0:00:00',
-    security: { firewall: false, encryption: true, updates: true }
+    security: { firewall: false, encryption: true, updates: true },
+    accessLevel: 'restricted',
+    capabilities: ['remote-control', 'file-access'],
+    config: {
+      notifications: false
+    }
   }
 ];

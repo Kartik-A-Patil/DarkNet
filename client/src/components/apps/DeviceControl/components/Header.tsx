@@ -5,12 +5,9 @@ interface HeaderProps {
   onTabChange: (tab: 'overview' | 'control' | 'monitoring' | 'security' | 'topology') => void;
   deviceCount: number;
   onlineCount: number;
-  networkStats?: {
-    totalRecords: number;
-    totalLogs: number;
-    totalConnections: number;
-    deviceCount: number;
-  };
+  offlineCount?: number;
+  connectingCount?: number;
+  errorCount?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -18,7 +15,9 @@ const Header: React.FC<HeaderProps> = ({
   onTabChange,
   deviceCount,
   onlineCount,
-  networkStats
+  offlineCount = 0,
+  connectingCount = 0,
+  errorCount = 0
 }) => {
   const tabs = [
     { id: 'overview', label: 'OVERVIEW' },
@@ -39,21 +38,20 @@ const Header: React.FC<HeaderProps> = ({
           <span className="status-item">
             <span className="status-value online">{onlineCount}</span> Online
           </span>
-          <span className="status-item">
-            <span className="status-value">{deviceCount - onlineCount}</span> Offline
-          </span>
-          {networkStats && (
-            <>
-              <span className="status-item">
-                <span className="status-value">{networkStats.totalLogs}</span> Network Logs
-              </span>
-              <span className="status-item">
-                <span className="status-value">{networkStats.totalRecords}</span> DB Records
-              </span>
-              <span className="status-item">
-                <span className="status-value">{networkStats.totalConnections}</span> Connections
-              </span>
-            </>
+          {offlineCount > 0 && (
+            <span className="status-item">
+              <span className="status-value offline">{offlineCount}</span> Offline
+            </span>
+          )}
+          {connectingCount > 0 && (
+            <span className="status-item">
+              <span className="status-value connecting">{connectingCount}</span> Connecting
+            </span>
+          )}
+          {errorCount > 0 && (
+            <span className="status-item">
+              <span className="status-value error">{errorCount}</span> Errors
+            </span>
           )}
         </div>
       </div>

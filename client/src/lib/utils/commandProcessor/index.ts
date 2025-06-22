@@ -24,6 +24,21 @@ import { apt } from './commands/system/apt';
 // Network Commands
 import { ping } from './commands/network/ping';
 import { ifconfig } from './commands/network/ifconfig';
+import { 
+  netconnect, 
+  netdisconnect, 
+  netscan, 
+  netls, 
+  netcd, 
+  netpwd, 
+  netcat, 
+  netmkdir, 
+  netrm, 
+  nettouch, 
+  nethelp,
+  nettransfer,
+  netcp
+} from './commands/network/index';
 
 // Help Command
 import { help } from './commands/help';
@@ -53,6 +68,19 @@ const availableCommands: Command[] = [
   // Network commands
   ping,
   ifconfig,
+  netconnect,
+  netdisconnect,
+  netscan,
+  netls,
+  netcd,
+  netpwd,
+  netcat,
+  netmkdir,
+  netrm,
+  nettouch,
+  nethelp,
+  nettransfer,
+  netcp,
   
   // Help command
   help

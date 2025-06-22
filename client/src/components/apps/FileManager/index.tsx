@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useFileManager } from "./useFileManager";
 import { useFileActions } from "./useFileActions";
 import FileManagerToolbar from "./FileManagerToolbar";
@@ -6,8 +6,11 @@ import FileManagerSidebar from "./FileManagerSidebar";
 import FileView from "./FileView";
 import FileManagerStatusBar from "./FileManagerStatusBar";
 import FileManagerModals from "./FileManagerModals";
+import NetworkView from "./NetworkView";
 
 const FileManager: React.FC = () => {
+  const [isNetworkView, setIsNetworkView] = useState(false);
+  
   const {
     // State
     currentPath,
@@ -125,6 +128,21 @@ const FileManager: React.FC = () => {
     }
   }, [currentPath, navigateTo, openFile]);
 
+  // Network view handlers
+  const handleNetworkView = () => {
+    setIsNetworkView(true);
+  };
+
+  const handleNetworkNavigateToPath = (path: string) => {
+    setIsNetworkView(false);
+    navigateTo(path);
+  };
+
+  const handleRegularNavigation = (path: string) => {
+    setIsNetworkView(false);
+    navigateTo(path);
+  };
+
   // Modal handlers
   const submitNewFolder = useCallback(async () => {
     if (newFolderName.trim()) {
@@ -182,63 +200,75 @@ const FileManager: React.FC = () => {
   return (
     <div className="h-full flex flex-col bg-gray-900">
       {/* Toolbar */}
-      <FileManagerToolbar
-        canGoBack={historyIndex > 0}
-        canGoForward={historyIndex < history.length - 1}
-        breadcrumbs={getBreadcrumbs()}
-        viewMode={viewMode}
-        onNavigateBack={navigateBack}
-        onNavigateForward={navigateForward}
-        onNavigateUp={navigateUp}
-        onNavigateHome={navigateToHome}
-        onNavigateTo={navigateTo}
-        onToggleViewMode={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-        onCreateNewFolder={createNewFolder}
-        onCreateNewFile={createNewFile}
-        onCreateNewHtmlFile={createNewHtmlFile}
-        onCreateNewCssFile={createNewCssFile}
-        onCreateNewJsFile={createNewJsFile}
-        onCreateNewMarkdownFile={createNewMarkdownFile}
-      />
+      {!isNetworkView && (
+        <FileManagerToolbar
+          canGoBack={historyIndex > 0}
+          canGoForward={historyIndex < history.length - 1}
+          breadcrumbs={getBreadcrumbs()}
+          viewMode={viewMode}
+          onNavigateBack={navigateBack}
+          onNavigateForward={navigateForward}
+          onNavigateUp={navigateUp}
+          onNavigateHome={navigateToHome}
+          onNavigateTo={handleRegularNavigation}
+          onToggleViewMode={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+          onCreateNewFolder={createNewFolder}
+          onCreateNewFile={createNewFile}
+          onCreateNewHtmlFile={createNewHtmlFile}
+          onCreateNewCssFile={createNewCssFile}
+          onCreateNewJsFile={createNewJsFile}
+          onCreateNewMarkdownFile={createNewMarkdownFile}
+        />
+      )}
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <FileManagerSidebar
           currentPath={currentPath}
-          onNavigateTo={navigateTo}
+          onNavigateTo={handleRegularNavigation}
+          onNetworkView={handleNetworkView}
+          isNetworkView={isNetworkView}
         />
 
-        {/* Files area */}
-        <div
-          className="flex-1 overflow-auto bg-gray-900"
-          onClick={() => setSelectedFile(null)}
-          onContextMenu={handleEmptySpaceContextMenu}
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-600 border-t-gray-400"></div>
-            </div>
+        {/* Content area */}
+        <div className="flex-1 overflow-auto bg-gray-900">
+          {isNetworkView ? (
+            <NetworkView onNavigateToPath={handleNetworkNavigateToPath} />
           ) : (
-            <FileView
-              files={files}
-              viewMode={viewMode}
-              selectedFile={selectedFile}
-              onFileClick={handleClick}
-              onFileDoubleClick={handleDoubleClick}
-              onFileContextMenu={handleContextMenu}
-              getFileIcon={getFileIcon}
-              formatFileSize={formatFileSize}
-            />
+            <div
+              className="h-full"
+              onClick={() => setSelectedFile(null)}
+              onContextMenu={handleEmptySpaceContextMenu}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-600 border-t-gray-400"></div>
+                </div>
+              ) : (
+                <FileView
+                  files={files}
+                  viewMode={viewMode}
+                  selectedFile={selectedFile}
+                  onFileClick={handleClick}
+                  onFileDoubleClick={handleDoubleClick}
+                  onFileContextMenu={handleContextMenu}
+                  getFileIcon={getFileIcon}
+                  formatFileSize={formatFileSize}
+                />
+              )}
+            </div>
           )}
         </div>
       </div>
 
       {/* Status bar */}
-      <FileManagerStatusBar
-        fileCount={files.length}
-        currentPath={currentPath}
-      />
+      {!isNetworkView && (
+        <FileManagerStatusBar
+          fileCount={files.length}
+          currentPath={currentPath}
+        />
+      )}
 
       {/* Modals */}
       <FileManagerModals

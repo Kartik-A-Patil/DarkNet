@@ -3,11 +3,15 @@ import React from 'react';
 interface FileManagerSidebarProps {
   currentPath: string;
   onNavigateTo: (path: string) => void;
+  onNetworkView: () => void;
+  isNetworkView: boolean;
 }
 
 const FileManagerSidebar: React.FC<FileManagerSidebarProps> = ({
   currentPath,
   onNavigateTo,
+  onNetworkView,
+  isNetworkView,
 }) => {
   const sidebarItems = [
     {
@@ -24,10 +28,18 @@ const FileManagerSidebar: React.FC<FileManagerSidebarProps> = ({
       section: "DEVICES",
       items: [
         { name: "System (/)", path: "/", icon: "fa-hdd" },
-        { name: "Network", path: "", icon: "fa-network-wired", disabled: true },
+        { name: "Network", path: "network", icon: "fa-network-wired", isNetwork: true },
       ]
     }
   ];
+
+  const handleItemClick = (item: any) => {
+    if (item.isNetwork) {
+      onNetworkView();
+    } else {
+      onNavigateTo(item.path);
+    }
+  };
 
   return (
     <div className="w-48 bg-gray-900 border-r border-gray-700 overflow-y-auto">
@@ -41,14 +53,17 @@ const FileManagerSidebar: React.FC<FileManagerSidebarProps> = ({
               <div
                 key={itemIdx}
                 className={`px-2 py-1.5 rounded cursor-pointer flex items-center space-x-2 text-sm transition-colors ${
-                  currentPath === item.path 
+                  (item.isNetwork && isNetworkView) || currentPath === item.path 
                     ? "bg-gray-700 text-white" 
                     : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                } ${item.disabled ? "opacity-40 cursor-not-allowed hover:bg-transparent hover:text-gray-300" : ""}`}
-                onClick={() => !item.disabled && onNavigateTo(item.path)}
+                }`}
+                onClick={() => handleItemClick(item)}
               >
                 <i className={`fa ${item.icon} text-gray-400 w-4`}></i>
                 <span>{item.name}</span>
+                {item.isNetwork && (
+                  <i className="fa fa-external-link-alt text-xs text-blue-400 ml-auto"></i>
+                )}
               </div>
             ))}
           </div>
