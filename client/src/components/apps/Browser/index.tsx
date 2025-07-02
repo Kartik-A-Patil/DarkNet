@@ -8,6 +8,7 @@ import RenderFrame from './components/RenderFrame';
 import FileDialog from '../../common/FileDialog';
 import BookmarkManager from './components/BookmarkManager';
 import { DeviceNetworkBrowser } from '../DeviceControl/browser/NetworkBrowser';
+import { mockSites } from './mock-data';
 
 interface BrowserProps {
   filePath?: string;
@@ -31,7 +32,29 @@ const Browser: React.FC<BrowserProps> = ({ filePath, shouldOpenFile }) => {
   const [activeTabId, setActiveTabId] = useState('welcome');
   const [showFileExplorer, setShowFileExplorer] = useState(false);
   const [showBookmarks, setShowBookmarks] = useState(false);
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>(() => {
+    const initialBookmarks: Bookmark[] = [
+      {
+        id: 'bookmark-1',
+        title: 'MyTube',
+        url: 'https://www.youtube.com',
+        createdAt: new Date(),
+      },
+      {
+        id: 'bookmark-2',
+        title: 'Spotiy',
+        url: 'https://www.spotify.com',
+        createdAt: new Date(),
+      },
+      {
+        id: 'bookmark-3',
+        title: 'CoinBase',
+        url: 'https://www.coinbase.com',
+        createdAt: new Date(),
+      },
+    ];
+    return initialBookmarks;
+  });
   const [history, setHistory] = useState<Array<{ url: string; title: string; timestamp: Date }>>([]);
 
   // Supported file extensions for browser
@@ -142,6 +165,21 @@ const Browser: React.FC<BrowserProps> = ({ filePath, shouldOpenFile }) => {
       if (url.startsWith('file://')) {
         const filePath = url.replace('file://', '');
         await openFileInBrowser(filePath);
+        return;
+      }
+
+      if (url in mockSites) {
+        setTabs(prev => prev.map(tab => 
+          tab.id === tabId 
+            ? { 
+                ...tab, 
+                content: mockSites[url],
+                title: extractTitle(mockSites[url]) || url,
+                isLoading: false,
+                error: undefined
+              }
+            : tab
+        ));
         return;
       }
 
@@ -641,6 +679,18 @@ function getWelcomePageHTML(): string {
                 <div class="action-card" onclick="window.parent.postMessage({action: 'newTab'}, '*')">
                     <h3>➕ New Tab</h3>
                     <p>Open a new browser tab</p>
+                </div>
+                <div class="action-card" onclick="window.parent.postMessage({action: 'navigate', url: 'https://www.youtube.com'}, '*')">
+                    <h3>MyTube</h3>
+                    <p>Watch your favorite videos</p>
+                </div>
+                <div class="action-card" onclick="window.parent.postMessage({action: 'navigate', url: 'https://www.spotify.com'}, '*')">
+                    <h3>Spotiy</h3>
+                    <p>Listen to music</p>
+                </div>
+                <div class="action-card" onclick="window.parent.postMessage({action: 'navigate', url: 'https://www.coinbase.com'}, '*')">
+                    <h3>CoinBase</h3>
+                    <p>Trade cryptocurrency</p>
                 </div>
                 <div class="action-card" onclick="window.parent.postMessage({action: 'help'}, '*')">
                     <h3>❓ Help</h3>

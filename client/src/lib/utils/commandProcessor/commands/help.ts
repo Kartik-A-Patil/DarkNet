@@ -46,6 +46,15 @@ export const help: Command = {
         }
       });
       
+      // Process management commands
+      output.push('\nProcess Management:');
+      ['ps', 'top', 'htop', 'kill', 'killall', 'pgrep', 'jobs', 'cleanup', 'pstree', 'pstat', 'malware', 'crash'].forEach(cmd => {
+        const command = commands.find(c => c.name === cmd);
+        if (command) {
+          output.push(`  ${command.name.padEnd(10)} - ${command.description}`);
+        }
+      });
+      
       // Network commands
       output.push('\nNetwork:');
       ['ping', 'ifconfig'].forEach(cmd => {

@@ -7,6 +7,7 @@ import {
 } from "../../../types/os.types";
 import appDefinitions from "./appDefinitions";
 import { windowAnimations } from "../../animations";
+import { processManager } from "../../../core/processManager/ProcessManager";
 
 export function useWindowManager() {
   const [windows, setWindows] = useState<Window[]>([]);
@@ -52,6 +53,17 @@ export function useWindowManager() {
         isActive: true,
         props: options?.props || {}
       };
+
+      // Create process for the app
+      const needsNetwork = ['browser', 'networkscanner', 'mailware', 'socialfeed'].includes(appType);
+      const process = processManager.createAppProcess(
+        appType,
+        id,
+        needsNetwork
+      );
+
+      // Store process ID in window props for tracking
+      newWindow.props.processId = process.pid;
 
       // Deactivate other windows
       const updatedWindows = windows.map((w) => ({ ...w, isActive: false }));
@@ -106,6 +118,19 @@ export function useWindowManager() {
   // Close a window
   const closeWindow = useCallback(
     (id: string) => {
+      // Find the window to get its process ID
+      const windowToClose = windows.find(w => w.id === id);
+      const processId = windowToClose?.props?.processId;
+
+      // Kill the associated process if it exists
+      if (processId) {
+        try {
+          processManager.killProcess(processId, 'SIGTERM');
+        } catch (error) {
+          console.warn(`Failed to kill process ${processId} for window ${id}:`, error);
+        }
+      }
+
       // Find the window element and animate close
       const windowElement = document.querySelector(`[data-window-id="${id}"]`) as HTMLElement;
       if (windowElement) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useOS } from '../../contexts/OSContext';
+import { getSystemNetworkInfo } from '../../core/networking';
 
 // Mock process type
 interface Process {
@@ -28,6 +29,7 @@ interface ResourceUsage {
 const SystemMonitor: React.FC = () => {
   const { isSudoMode } = useOS();
   const [activeTab, setActiveTab] = useState<'processes' | 'resources' | 'services'>('processes');
+  const [networkInfo, setNetworkInfo] = useState<any>(null);
   const [processes, setProcesses] = useState<Process[]>([]);
   const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
   const [resourceUsage, setResourceUsage] = useState<ResourceUsage>({
@@ -42,8 +44,20 @@ const SystemMonitor: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showProcessInfo, setShowProcessInfo] = useState(false);
 
-  // Generate mock processes
+  // Generate mock processes and load network info
   useEffect(() => {
+    // Load network information
+    const loadNetworkInfo = async () => {
+      try {
+        const info = getSystemNetworkInfo();
+        setNetworkInfo(info);
+      } catch (error) {
+        console.error('Failed to load network info:', error);
+      }
+    };
+
+    loadNetworkInfo();
+
     const mockProcesses: Process[] = [
       { pid: 1, name: 'systemd', user: 'root', cpu: 0.2, memory: 0.5, status: 'running', startTime: new Date(Date.now() - 86400000), command: '/sbin/init' },
       { pid: 412, name: 'NetworkManager', user: 'root', cpu: 0.4, memory: 1.2, status: 'running', startTime: new Date(Date.now() - 85400000), command: '/usr/sbin/NetworkManager --no-daemon' },
@@ -81,6 +95,11 @@ const SystemMonitor: React.FC = () => {
           down: Math.max(0, resourceUsage.network.down + (Math.random() - 0.3) * 100)
         }
       });
+
+      // Refresh network info periodically
+      if (Math.random() < 0.1) { // 10% chance each interval
+        loadNetworkInfo();
+      }
     }, 2000);
 
     return () => clearInterval(interval);
@@ -504,18 +523,73 @@ const SystemMonitor: React.FC = () => {
                   <div className="col-span-3 font-medium">RX/TX</div>
                   <div className="col-span-2 font-medium">Status</div>
                 </div>
+                {networkInfo?.interfaces?.map((iface: any, index: number) => (
+                  <div key={index} className="grid grid-cols-12 gap-1 mb-1">
+                    <div className="col-span-3">{iface.name}</div>
+                    <div className="col-span-4">{iface.ip}</div>
+                    <div className="col-span-3">{iface.rx}/{iface.tx} KB/s</div>
+                    <div className={`col-span-2 ${iface.status === 'UP' ? 'text-green-400' : 'text-red-400'}`}>
+                      {iface.status}
+                    </div>
+                  </div>
+                )) || (
+                  <>
+                    <div className="grid grid-cols-12 gap-1 mb-1">
+                      <div className="col-span-3">eth0</div>
+                      <div className="col-span-4">192.168.1.105</div>
+                      <div className="col-span-3">{resourceUsage.network.down.toFixed(1)}/{resourceUsage.network.up.toFixed(1)} KB/s</div>
+                      <div className="col-span-2 text-green-400">UP</div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <div className="col-span-3">lo</div>
+                      <div className="col-span-4">127.0.0.1</div>
+                      <div className="col-span-3">0/0 KB/s</div>
+                      <div className="col-span-2 text-green-400">UP</div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {/* Network Services */}
+            <div className="bg-gray-800 p-3 rounded">
+              <h4 className="text-sm font-medium mb-1">Network Services</h4>
+              <div className="text-xs text-gray-400">
                 <div className="grid grid-cols-12 gap-1 mb-1">
-                  <div className="col-span-3">eth0</div>
-                  <div className="col-span-4">192.168.1.105</div>
-                  <div className="col-span-3">{resourceUsage.network.down.toFixed(1)}/{resourceUsage.network.up.toFixed(1)} KB/s</div>
-                  <div className="col-span-2 text-green-400">UP</div>
+                  <div className="col-span-2 font-medium">Port</div>
+                  <div className="col-span-4 font-medium">Service</div>
+                  <div className="col-span-3 font-medium">Protocol</div>
+                  <div className="col-span-3 font-medium">Status</div>
                 </div>
-                <div className="grid grid-cols-12 gap-1">
-                  <div className="col-span-3">lo</div>
-                  <div className="col-span-4">127.0.0.1</div>
-                  <div className="col-span-3">0/0 KB/s</div>
-                  <div className="col-span-2 text-green-400">UP</div>
-                </div>
+                {networkInfo?.services?.slice(0, 5).map((service: any, index: number) => (
+                  <div key={index} className="grid grid-cols-12 gap-1 mb-1">
+                    <div className="col-span-2">{service.port}</div>
+                    <div className="col-span-4">{service.name}</div>
+                    <div className="col-span-3">{service.protocol}</div>
+                    <div className="col-span-3 text-green-400">{service.status}</div>
+                  </div>
+                )) || (
+                  <>
+                    <div className="grid grid-cols-12 gap-1 mb-1">
+                      <div className="col-span-2">22</div>
+                      <div className="col-span-4">SSH</div>
+                      <div className="col-span-3">TCP</div>
+                      <div className="col-span-3 text-green-400">running</div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1 mb-1">
+                      <div className="col-span-2">80</div>
+                      <div className="col-span-4">HTTP</div>
+                      <div className="col-span-3">TCP</div>
+                      <div className="col-span-3 text-green-400">running</div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-1">
+                      <div className="col-span-2">443</div>
+                      <div className="col-span-4">HTTPS</div>
+                      <div className="col-span-3">TCP</div>
+                      <div className="col-span-3 text-green-400">running</div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -525,6 +599,26 @@ const SystemMonitor: React.FC = () => {
       {/* Services Tab */}
       {activeTab === 'services' && (
         <div className="flex-1 overflow-auto p-4">
+          <div className="mb-4">
+            <div className="text-sm mb-2">Network Overview</div>
+            <div className="bg-gray-800 rounded p-3 mb-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-lg font-bold text-blue-400">{networkInfo?.stats?.totalSystems || 5}</div>
+                  <div className="text-xs text-gray-400">Network Systems</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-green-400">{networkInfo?.stats?.onlineSystems || 5}</div>
+                  <div className="text-xs text-gray-400">Online Systems</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-yellow-400">{networkInfo?.stats?.totalOpenPorts || 45}</div>
+                  <div className="text-xs text-gray-400">Open Ports</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <div className="mb-4">
             <div className="text-sm mb-2">System Services Status</div>
             <div className="bg-gray-800 rounded p-2">

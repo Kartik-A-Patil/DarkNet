@@ -122,3 +122,8 @@ bin/
 vite.config.ts.*
 # Local Netlify folder
 .netlify
+
+
+
+#temporary files
+server

@@ -8,9 +8,16 @@ import AuthScreen from './components/auth/AuthScreen';
 import { useAuth } from './hooks/use-auth';
 import { motion } from 'framer-motion';
 import { PerformanceProvider } from './contexts/PerformanceContext';
+import { initializeNetworking } from './core/networking';
 
 function App() {
   const { user, loading } = useAuth();
+
+  // Initialize networking system
+  useEffect(() => {
+    const networkCore = initializeNetworking();
+    console.log('🌐 DarkNet Networking Core initialized:', networkCore.stats);
+  }, []);
 
   if (loading) {
     return (

@@ -33,11 +33,11 @@ const FileView: React.FC<FileViewProps> = ({
 
   if (viewMode === "grid") {
     return (
-      <div className="grid grid-cols-8 gap-3 p-4">
+      <div className="flex flex-wrap p-4 w-full">
         {files.map(([name, node]) => (
           <div
             key={name}
-            className={`flex flex-col items-center p-3 rounded cursor-pointer transition-colors ${
+            className={`flex flex-col items-center rounded cursor-pointer transition-colors w-24 h-32 m-2 ${
               selectedFile === name
                 ? "bg-gray-700"
                 : "hover:bg-gray-800"
@@ -49,9 +49,11 @@ const FileView: React.FC<FileViewProps> = ({
             onDoubleClick={() => onFileDoubleClick(name, node)}
             onContextMenu={(e) => onFileContextMenu(e, name, node)}
           >
-            <i className={`fa ${getFileIcon(name, node)} text-2xl text-gray-400 mb-2`}></i>
-            <div className="text-xs text-center text-gray-300 break-all leading-tight max-w-full">
-              {name}
+            <div className="flex items-center justify-center h-16 w-full py-2">
+              <i className={`fa ${getFileIcon(name, node)} text-2xl text-gray-400`}></i>
+            </div>
+            <div className="w-full h-16 px-1 flex items-start justify-center">
+              <span className="text-xs text-center text-gray-300 line-clamp-2 break-words">{name}</span>
             </div>
           </div>
         ))}

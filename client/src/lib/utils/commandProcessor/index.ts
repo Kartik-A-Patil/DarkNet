@@ -27,7 +27,7 @@ import { ifconfig } from './commands/network/ifconfig';
 import { 
   netconnect, 
   netdisconnect, 
-  netscan, 
+  netscan as oldNetscan, 
   netls, 
   netcd, 
   netpwd, 
@@ -39,6 +39,30 @@ import {
   nettransfer,
   netcp
 } from './commands/network/index';
+
+// New Networking Core Commands
+import { 
+  netscan, 
+  netstat, 
+  netinfo, 
+  netservice 
+} from '../../../core/networking/NetworkCommands';
+
+// Process Management Commands
+import {
+  ps,
+  kill,
+  killall,
+  top,
+  pgrep,
+  jobs,
+  htop,
+  cleanup,
+  pstree,
+  pstat,
+  malware,
+  crash
+} from './commands/process/index';
 
 // Help Command
 import { help } from './commands/help';
@@ -70,7 +94,7 @@ const availableCommands: Command[] = [
   ifconfig,
   netconnect,
   netdisconnect,
-  netscan,
+  oldNetscan,
   netls,
   netcd,
   netpwd,
@@ -81,6 +105,26 @@ const availableCommands: Command[] = [
   nethelp,
   nettransfer,
   netcp,
+  
+  // New networking core commands
+  netscan,
+  netstat,
+  netinfo,
+  netservice,
+  
+  // Process management commands
+  ps,
+  kill,
+  killall,
+  top,
+  pgrep,
+  jobs,
+  htop,
+  cleanup,
+  pstree,
+  pstat,
+  malware,
+  crash,
   
   // Help command
   help
